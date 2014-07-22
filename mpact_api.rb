@@ -40,7 +40,8 @@ get '/guide/:key/entries/today' do
 	diff = (today-start_date).to_i
 	idx = diff % guide_entries.length
 
-	guide_entries[idx].to_json
+	#production
+	guide_entries[idx-1].to_json
 
 end
 

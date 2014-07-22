@@ -19,9 +19,16 @@ get '/guides' do
 	Guide.limit(5).to_json
 end
 
+
+helpers do
+	def guide_entries
+		@guide_entries ||= Entry.where("'guideKey' = ?", params[:key]) || halt(404)
+	end
+end
+
+
 get '/guide/:key/entries' do
-	puts :key
-	Entry.where("'guideKey' = ?", params[:key]).to_json
+	guide_entries.to_json
 end
 
 

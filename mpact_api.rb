@@ -22,7 +22,6 @@ end
 
 helpers do
 	def guide_entries
-		puts params[:key]
 		@guide_entries ||= Entry.where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 	end
 end
@@ -31,6 +30,21 @@ end
 get '/guide/:key/entries' do
 	guide_entries.to_json
 end
+
+
+# get a single entry for "today" functionality (per guide)
+get '/guide/:key/entries/today' do
+
+	start_date = Date.new(2014, 7, 21)
+	today = Date.today
+	diff = (today-start_date).to_i
+	idx = diff % guide_entries.length
+
+	guide_entries[idx].to_json
+
+end
+
+
 
 
 # helpers do

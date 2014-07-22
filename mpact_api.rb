@@ -20,8 +20,7 @@ get '/guides' do
 end
 
 get '/guide/:key/entries' do
-	puts :key
-	Entry.where('entries.guideKey = ?', params[:key]).to_json
+	Entry.where("entries.guideKey = ?", params[:key]).to_json
 end
 
 

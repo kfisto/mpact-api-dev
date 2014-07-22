@@ -22,7 +22,8 @@ end
 
 helpers do
 	def guide_entries
-		@guide_entries ||= Entry.where("'guideKey' = ?", params[:key]) || halt(404)
+		puts params[:key]
+		@guide_entries ||= Entry.where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 	end
 end
 

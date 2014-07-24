@@ -48,6 +48,34 @@ end
 
 
 
+
+#################
+# Static (image) handler
+
+set :public_folder, 'public'
+
+def send_static_file(path, &missing_file_block)
+	file_path = File.join(File.dirname(__FILE__), 'public', path)
+
+	puts file_path
+
+	File.exist?(file_path) ? send_file(file_path) : missing_file_block.call
+end
+
+get '/images/:filename' do
+	# puts request.path
+
+	file_path = File.join(File.dirname(__FILE__), 'public', request.path + '.png')
+
+	puts file_path
+
+	File.exist?(file_path) ? send_file(file_path) : halt(404)
+
+	# send_static_file(request.path + '.png') {404}
+
+	# send_file File.join(:public_folder, '/images/', :filename + '.png')
+end
+
 # helpers do
 # 	def guide
 # 		@guide ||= 

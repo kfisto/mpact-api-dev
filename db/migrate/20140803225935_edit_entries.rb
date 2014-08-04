@@ -1,9 +1,9 @@
 class EditEntries < ActiveRecord::Migration
   def self.up
-  	add_column :data, :version_comment, :binary, :limit => 1.megabyte
+  	add_column :entries, :data, :binary, :limit => 8192
   end
 
   def self.down
-  	remove_column :data, :version_comment
+  	remove_column :entries, :data
   end
 end

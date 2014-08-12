@@ -11,12 +11,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140803225935) do
+ActiveRecord::Schema.define(version: 20140806120953) do
 
   create_table "entries", force: true do |t|
     t.string "guideKey"
     t.string "name"
-    t.string "file"
     t.string "image"
     t.binary "data",     limit: 8192
   end

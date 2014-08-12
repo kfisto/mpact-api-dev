@@ -24,29 +24,29 @@ $(document).ready(function() {
 	$('#image').val(entries[0].image);
 	$('#dfcontent').val(entries[0].data);
 
-	$('#deleteBtn').click(function() {
-		if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
+	// $('#deleteBtn').click(function() {
+	// 	if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
 
-			$('#_method').val('delete');
+	// 		// $('#_method').val('delete');
 
-			var url = '/guide/entry/' + $('#entry').val();
+	// 		var url = '/guide/entry/' + $('#entry').val();
 
-			console.log(url);
+	// 		console.log(url);
 
-			$.ajax({
-				type: 'DELETE',
-				url: url,
-				success: function(result) {
-					debugger;
-				},
-				failure: function(result) {
-					debugger;
-				}
-			});
-		} else {
-			$('#msgline').html('Delete canceled.');
-		}
-	});
+	// 		$.ajax({
+	// 			type: 'DELETE',
+	// 			url: url,
+	// 			success: function(result) {
+	// 				debugger;
+	// 			},
+	// 			failure: function(result) {
+	// 				debugger;
+	// 			}
+	// 		});
+	// 	} else {
+	// 		$('#msgline').html('Delete canceled.');
+	// 	}
+	// });
 
 });
 
@@ -95,7 +95,7 @@ input[type="submit"],input[type="reset"] {
 	<input type="reset"/>
 	<input type="submit"/>
 
-	<input type="hidden" id="_method" name="_method" value="put">
+	<!-- <input type="hidden" id="_method" name="_method" value="put"> -->
 	<input type="button" id="deleteBtn" value="Delete"/>
 </form>
 

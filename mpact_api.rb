@@ -3,7 +3,7 @@ require 'sinatra/activerecord'
 require 'json'
 require './environments'
 
-use Rack::MethodOverride
+# use Rack::MethodOverride
 
 set :public_folder, 'public'
 

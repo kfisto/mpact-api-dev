@@ -29,14 +29,26 @@
 		<th width="165">Name</th>
 		<th width="90">Need Photo</th>
 		<th width="90">Need Bio</th>
+		<th width="30"><img src="/images/check" width="24" height="24" title="Good to go!"/></th>
 	</thead>
 	<tbody>
 	
-	<% guide_entries.each do |entry| %>
+	<% guide_entries.each do |entry| 
+
+		needImage = entry.image.nil? || entry.image.empty?
+		needBio = entry.data.nil? || entry.data.empty?
+		%>
 		<tr>
 			<td><%= entry.name %></td>
-			<td><%= entry.image.nil? || entry.image.empty? ? "Yes" : "" %></td>
-			<td><%= entry.data.nil? || entry.data.empty? ? "Yes" : "" %></td>
+			<td><%= needImage ? "Yes" : "" %></td>
+			<td><%= needBio ? "Yes" : "" %></td>
+			<td>
+				<%= 
+					if !needImage && !needBio 
+						"<img src=\"/images/check\" width=\"24\" height=\"24\"  title=\"Good to go!\"/>"
+					end
+				%>
+			</td>
 		</tr>
 	<% end %>
 

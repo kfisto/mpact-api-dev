@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>GMC Report</title>
+</head>
+<body>
+
+<table>
+	<thead>
+		<th>Name</th>
+		<th>Need Photo</th>
+		<th>Need Bio</th>
+	</thead>
+	<tbody>
+	
+	<% guide_entries.each do |entry| %>
+		<tr>
+			<td><%= entry.name %></td>
+			<td><%= entry.image.nil? || entry.image.empty? ? "Yes" : "" %></td>
+			<td><%= entry.data.nil? || entry.data.empty? ? "Yes" : "" %></td>
+		</tr>
+	<% end %>
+
+	</tbody>
+</table>
+
+	
+
+</body>
+</html>

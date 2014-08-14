@@ -36,6 +36,18 @@ get '/guide/:key/entries' do
 end
 
 
+get '/guide/:key/entries/report' do
+
+	if params[:key] == "gmc"
+		erb :gmcreport
+	else
+		"#{params[:key]} report"
+	end
+
+
+end
+
+
 # get a single entry for "today" functionality (per guide)
 get '/guide/:key/entries/today' do
 

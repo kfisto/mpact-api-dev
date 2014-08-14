@@ -44,7 +44,6 @@ get '/guide/:key/entries/report' do
 		"#{params[:key]} report"
 	end
 
-
 end
 
 

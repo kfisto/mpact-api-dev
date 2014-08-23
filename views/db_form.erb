@@ -5,6 +5,23 @@
 <script src="/jquery-2.1.1.min.js" type="text/javascript"></script>
 
 <script>
+
+function getUrlParam(param) {
+	var url = window.location.search.substring(1); 	// url after '?'
+	var params = url.split('&');
+	for (var i=0,len=params.length; i < len; i++) {
+		var kvp = params[i].split('=');
+		if (kvp[0] == param) {
+			return decodeURIComponent(kvp[1]);
+		}
+	}
+	return null;
+}
+
+function hideMessage() {
+	$('#msgline').fadeTo(500, 0);
+}
+
 var entries = [];
 <% guide_entries.each do |entry| %>
 	entries.push(<%= entry.to_json %>);
@@ -12,16 +29,59 @@ var entries = [];
 
 $(document).ready(function() {
 
+	var edited = getUrlParam('edited'),
+		error = getUrlParam('error');
+
+	$('#msgline').hide();
+
+	if (edited !== null) {
+		$('#msgline').html("Entry " + edited + " updated!");
+
+		var initialTop = document.body.scrollHeight + 20 + 1,					// scroll height + top padding + 1 for good measure
+			newTop = document.body.scrollHeight - $('#msgline').outerHeight() - 15 - 1; 	// initial top - outer height - top padding - 15 - 1;
+
+		$('#msgline').show();
+		$('#msgline').offset({ left: 15, top: initialTop });
+		$('#msgline').fadeTo(0,0);
+		$('#msgline').animate({
+			opacity: 1,
+			top: newTop
+		}, 500);
+		setTimeout("hideMessage()", 7000);
+	}
+
+	if (error !== null) {
+		$('#msgline').html(error);
+
+		var initialTop = document.body.scrollHeight + 20 + 1,					// scroll height + top padding + 1 for good measure
+			newTop = document.body.scrollHeight - $('#msgline').outerHeight() - 15 - 1; 	// initial top - outer height - top padding - 15 - 1;
+
+		$('#msgline').show();
+		$('#msgline').offset({ left: 15, top: initialTop });
+		$('#msgline').fadeTo(0,0);
+		$('#msgline').animate({
+			opacity: 1,
+			top: newTop
+		}, 500);
+		setTimeout("hideMessage()", 7000);
+	}
+
+
+
 	$('#entry').change(function () {
-		var value = $('select option:selected').val();
-		$('#name').val(entries[value-1].name);
-		$('#image').val(entries[value-1].image);
-		$('#dfcontent').val(entries[value-1].data);
+		var value = $('select option:selected').val(),
+			selectedEntry = $.grep(entries, function(item) {
+				return item.id == value;
+			})[0];
+
+		$('#name').val(selectedEntry.name);
+		$('#image').val(selectedEntry.image);
+		$('#contentreadonly').val(selectedEntry.data);
 	});
 
 	$('#name').val(entries[0].name);
 	$('#image').val(entries[0].image);
-	$('#dfcontent').val(entries[0].data);
+	$('#contentreadonly').val(entries[0].data);
 
 	// $('#deleteBtn').click(function() {
 	// 	if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
@@ -67,11 +127,24 @@ label {
 input[type="submit"],input[type="reset"] {
 	float: right;
 }
+textarea[disabled] {
+	background-color: #ccc;
+}
+
+#msgline {
+	position: absolute;
+	min-width: 200px;
+	border-radius: 20px;
+	color: white;
+	background-color: #323232;
+	padding: 10px 20px;
+}
+
 </style>
 
 </head>
 <body>
-<form action="/post/entry" method="post" enctype="multipart/form-data">
+<form action="/guide/<%= params[:key] %>/editentry" method="post" enctype="multipart/form-data">
 	<label for="entry">Entry</label>
 	<select id="entry" name="entry">
 		<% guide_entries.each do |entry| %>
@@ -88,7 +161,8 @@ input[type="submit"],input[type="reset"] {
 	<label for="datafile">Data File</label>
 	<input type="file" name="datafile"/>
 
-	<textarea id="dfcontent" rows="6" cols="75"></textarea>
+	<textarea id="contentreadonly" disabled name="dfcontent" rows="6" cols="75"></textarea>
+	<textarea id="dfcontent" name="dfcontent" rows="6" cols="75"></textarea>
 
 	<br/><br/>
 	<input type="reset"/>

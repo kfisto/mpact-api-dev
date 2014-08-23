@@ -86,6 +86,8 @@ post '/guide/:key/entry' do
 			entry.image = image
 		end
 
+		puts content
+
 		if !filename.nil? && !filename.empty?
 			entry.data = filename[:tempfile].read
 		elseif !content.nil?
@@ -103,19 +105,29 @@ get '/guide/:key/editentries' do
 	erb :db_form
 end
 
-post '/post/entry' do
+post '/guide/:key/editentry' do
 
 	id = params[:entry]
 
 	Entry.update(id, { :image => params[:image], :name => params[:name]})
 
 	filename = params[:datafile] if !params[:datafile].nil?
+	dfcontent = params[:dfcontent]
 	
+	puts filename
+	puts dfcontent
+
+	if !dfcontent.nil? 
+		puts "update entry with content: " + dfcontent
+		Entry.update(id, :data => dfcontent)
+	end
+
 	if !filename.nil? && !filename.empty?
+		puts "update entry with file"
 		Entry.update(id, :data => filename[:tempfile].read)
 	end
 
-	"Entry #{id} updated."
+	redirect '/guide/' + params[:key] + '/editentries?edited=' + id.to_s
 end
 
 

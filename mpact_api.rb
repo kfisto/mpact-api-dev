@@ -25,6 +25,10 @@ end
 
 
 helpers do
+	# def guides
+	# 	@guides ||= Guide.limit(5)
+	# end
+
 	def guide_entries
 		@guide_entries ||= Entry.where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 		@guide_entries.sort_by &:id
@@ -61,11 +65,43 @@ get '/guide/:key/entries/today' do
 end
 
 
+get '/guide/:key/addentry' do
+	erb :add_form
+end
+
+post '/guide/:key/entry' do
+
+	entry = nil
+
+	name = params[:name]
+	image = params[:image]
+	filename = params[:datafile] if !params[:datafile].nil?
+	content = params[:dfcontent]
+
+	if !name.nil?
+		# puts "do stuff"
+		entry = Entry.create(guideKey: params[:key], name: name)
+
+		if !image.nil?
+			entry.image = image
+		end
+
+		if !filename.nil? && !filename.empty?
+			entry.data = filename[:tempfile].read
+		elseif !content.nil?
+			entry.data = content
+		end
+
+		redirect '/guide/' + params[:key] + '/addentry?added=' + entry.id.to_s
+	else
+		redirect '/guide/' + params[:key] + '/addentry?error=Error adding new entry.'
+	end
+
+end
 
 get '/guide/:key/editentries' do
 	erb :db_form
 end
-
 
 post '/post/entry' do
 

@@ -15,6 +15,10 @@ class Entry < ActiveRecord::Base
 	belongs_to :guide
 end
 
+before do
+	content_type 'application/json'
+end
+
 get '/' do
   'mpact api'
 end

@@ -15,15 +15,12 @@ class Entry < ActiveRecord::Base
 	belongs_to :guide
 end
 
-before do
-	content_type 'application/json'
-end
-
 get '/' do
   'mpact api'
 end
 
 get '/guides' do
+	content_type 'application/json'
 	Guide.limit(5).to_json
 end
 
@@ -40,6 +37,7 @@ helpers do
 end
 
 get '/guide/:key/entries' do
+	content_type 'application/json'
 	guide_entries.to_json
 end
 
@@ -57,7 +55,8 @@ end
 
 # get a single entry for "today" functionality (per guide)
 get '/guide/:key/entries/today' do
-
+	content_type 'application/json'
+	
 	start_date = Date.new(2014, 7, 21)
 	today = Date.today
 	diff = (today-start_date).to_i

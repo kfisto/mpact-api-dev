@@ -27,12 +27,32 @@ var entries = [];
 	entries.push(<%= entry.to_json %>);
 <% end %>
 
+function showMessage(message) {
+	$('#msgline').html(message);
+	var initialTop = document.body.scrollHeight + 20 + 1,					// scroll height + top padding + 1 for good measure
+		newTop 	   = document.body.scrollHeight - $('#msgline').outerHeight() - 15 - 1; 	// initial top - outer height - top padding - 15 - 1;
+
+	$('#msgline').show();
+	$('#msgline').offset({ left: 15, top: initialTop });
+	$('#msgline').fadeTo(0,0);
+	$('#msgline').animate({
+		opacity: 1,
+		top: newTop
+	}, 500);
+	setTimeout("hideMessage()", 7000);
+}
+
 $(document).ready(function() {
 
 	var edited = getUrlParam('edited'),
+		deleted = getUrlParam('deleted'),
 		error = getUrlParam('error');
 
 	$('#msgline').hide();
+
+	if (deleted !== null) {
+		showMessage("Entry " + deleted + " deleted!");
+	}
 
 	if (edited !== null) {
 		$('#msgline').html("Entry " + edited + " updated!");
@@ -83,29 +103,27 @@ $(document).ready(function() {
 	$('#image').val(entries[0].image);
 	$('#contentreadonly').val(entries[0].data);
 
-	// $('#deleteBtn').click(function() {
-	// 	if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
+	$('#deleteBtn').click(function() {
+		if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
 
-	// 		// $('#_method').val('delete');
+			var url = '/guide/<%= params[:key] %>/deleteentry/' + $('#entry').val();
 
-	// 		var url = '/guide/entry/' + $('#entry').val();
+			console.log(url);
 
-	// 		console.log(url);
-
-	// 		$.ajax({
-	// 			type: 'DELETE',
-	// 			url: url,
-	// 			success: function(result) {
-	// 				debugger;
-	// 			},
-	// 			failure: function(result) {
-	// 				debugger;
-	// 			}
-	// 		});
-	// 	} else {
-	// 		$('#msgline').html('Delete canceled.');
-	// 	}
-	// });
+			$.ajax({
+				type: 'POST',
+				url: url,
+				success: function(result) {
+					window.location.href = '/guide/<%= params[:key] %>/editentries?deleted=' + $('#entry').val()
+				},
+				failure: function(result) {
+					debugger;
+				}
+			});
+		} else {
+			$('#msgline').html('Delete canceled.');
+		}
+	});
 
 });
 

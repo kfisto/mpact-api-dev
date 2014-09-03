@@ -89,13 +89,13 @@ post '/guide/:key/entry' do
 			entry.image = image
 		end
 
-		puts content
+		# puts content
 
-		if !filename.nil? && !filename.empty?
-			entry.data = filename[:tempfile].read
-		elseif !content.nil?
-			entry.data = content
-		end
+		# if !filename.nil? && !filename.empty?
+		# 	entry.data = filename[:tempfile].read
+		# elseif !content.nil?
+		# 	entry.data = content
+		# end
 
 		redirect '/guide/' + params[:key] + '/addentry?added=' + entry.id.to_s
 	else
@@ -131,6 +131,18 @@ post '/guide/:key/editentry' do
 	end
 
 	redirect '/guide/' + params[:key] + '/editentries?edited=' + id.to_s
+end
+
+post '/guide/:key/deleteentry/:id' do
+	id = params[:id]
+	entry = Entry.find(id)
+	return status 404 if entry.nil?
+
+	entry.delete
+	status 202
+
+	redirect '/guide/' + params[:key] + '/editentries?deleted=' + id.to_s
+
 end
 
 

@@ -81,7 +81,9 @@ post '/guide/:key/entry' do
 	filename = params[:datafile] if !params[:datafile].nil?
 	content = params[:dfcontent]
 
-	nextid = Entry.next.id
+	nextid = Entry.last.id + 1
+
+	puts nextid.to_s
 
 	if !name.nil?
 		# puts "do stuff"

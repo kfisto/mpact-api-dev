@@ -81,9 +81,11 @@ post '/guide/:key/entry' do
 	filename = params[:datafile] if !params[:datafile].nil?
 	content = params[:dfcontent]
 
+	nextid = Entry.next.id
+
 	if !name.nil?
 		# puts "do stuff"
-		entry = Entry.create(guideKey: params[:key], name: name)
+		entry = Entry.create(id: nextid, guideKey: params[:key], name: name)
 
 		if !image.nil?
 			entry.image = image

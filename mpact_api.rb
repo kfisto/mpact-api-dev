@@ -32,7 +32,15 @@ helpers do
 
 	def guide_entries
 		@guide_entries ||= Entry.where('"entries"."guideKey" = ?', params[:key]) || halt(404)
-		@guide_entries.sort_by &:name
+
+		key = params[:key]
+		puts key
+
+		if key == "refuge"
+			@guide_entries.sort_by &:id
+		else
+			@guide_entries.sort_by &:name
+		end
 	end
 end
 

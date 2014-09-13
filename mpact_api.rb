@@ -12,8 +12,14 @@ class Guide < ActiveRecord::Base
 end
 
 class Entry < ActiveRecord::Base
-	belongs_to :guide
+	belongs_to :guide #, :order => "entrytype ASC, name DESC"
 end
+
+
+before do
+	error 401 unless params[:apikey] == "1138"
+end
+
 
 get '/' do
   'mpact api'
@@ -31,22 +37,23 @@ helpers do
 	# end
 
 	def guide_entries
-		@guide_entries ||= Entry.where('"entries"."guideKey" = ?', params[:key]) || halt(404)
-
-		key = params[:key]
-		puts key
-
-		if key == "refuge"
-			@guide_entries.sort_by &:id
-		else
-			@guide_entries.sort_by &:name
-		end
+		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 	end
 end
 
 get '/guide/:key/entries' do
 	content_type 'application/json'
-	guide_entries.to_json
+
+	key = params[:key]
+	puts key
+
+	if key == "refuge"
+		sorted = guide_entries.sort_by &:id
+	else
+		sorted = guide_entries
+	end
+
+	sorted.to_json
 end
 
 
@@ -109,9 +116,9 @@ post '/guide/:key/entry' do
 		# 	entry.data = content
 		# end
 
-		redirect '/guide/' + params[:key] + '/addentry?added=' + entry.id.to_s
+		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&added=' + entry.id.to_s
 	else
-		redirect '/guide/' + params[:key] + '/addentry?error=Error adding new entry.'
+		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&error=Error adding new entry.'
 	end
 
 end
@@ -124,7 +131,7 @@ post '/guide/:key/editentry' do
 
 	id = params[:entry]
 
-	Entry.update(id, { :image => params[:image], :name => params[:name]})
+	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype]})
 
 	filename = params[:datafile] if !params[:datafile].nil?
 	dfcontent = params[:dfcontent]
@@ -142,7 +149,7 @@ post '/guide/:key/editentry' do
 		Entry.update(id, :data => filename[:tempfile].read)
 	end
 
-	redirect '/guide/' + params[:key] + '/editentries?edited=' + id.to_s
+	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&edited=' + id.to_s
 end
 
 post '/guide/:key/deleteentry/:id' do
@@ -153,7 +160,7 @@ post '/guide/:key/deleteentry/:id' do
 	entry.delete
 	status 202
 
-	redirect '/guide/' + params[:key] + '/editentries?deleted=' + id.to_s
+	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&eleted=' + id.to_s
 
 end
 

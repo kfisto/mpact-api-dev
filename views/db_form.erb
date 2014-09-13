@@ -96,17 +96,23 @@ $(document).ready(function() {
 
 		$('#name').val(selectedEntry.name);
 		$('#image').val(selectedEntry.image);
+		$('#entrytype').val(selectedEntry.entrytype);
 		$('#contentreadonly').val(selectedEntry.data);
 	});
 
 	$('#name').val(entries[0].name);
 	$('#image').val(entries[0].image);
+	$('#entrytype').val(entries[0].entrytype);
 	$('#contentreadonly').val(entries[0].data);
+
+	$('#submitBtn').click(function() {
+		$('#submitBtn').disable(true)
+	});
 
 	$('#deleteBtn').click(function() {
 		if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
 
-			var url = '/guide/<%= params[:key] %>/deleteentry/' + $('#entry').val();
+			var url = '/guide/<%= params[:key] %>/deleteentry/' + $('#entry').val() + '?apikey=1138';
 
 			console.log(url);
 
@@ -114,7 +120,7 @@ $(document).ready(function() {
 				type: 'POST',
 				url: url,
 				success: function(result) {
-					window.location.href = '/guide/<%= params[:key] %>/editentries?deleted=' + $('#entry').val()
+					window.location.href = '/guide/<%= params[:key] %>/editentries?apikey=1138&deleted=' + $('#entry').val()
 				},
 				failure: function(result) {
 					debugger;
@@ -162,7 +168,7 @@ textarea[disabled] {
 
 </head>
 <body>
-<form action="/guide/<%= params[:key] %>/editentry" method="post" enctype="multipart/form-data">
+<form action="/guide/<%= params[:key] %>/editentry?apikey=1138" method="post" enctype="multipart/form-data">
 	<label for="entry">Entry</label>
 	<select id="entry" name="entry">
 		<% guide_entries.each do |entry| %>
@@ -179,12 +185,18 @@ textarea[disabled] {
 	<label for="datafile">Data File</label>
 	<input type="file" name="datafile"/>
 
+	<label for="entrytype">Entry Type</label>
+	<select id="entrytype" name="entrytype">
+		<option value="0">Person</option>
+		<option value="1">Org</option>
+	</select><br/>
+
 	<textarea id="contentreadonly" disabled name="dfcontent" rows="6" cols="75"></textarea>
 	<textarea id="dfcontent" name="dfcontent" rows="6" cols="75"></textarea>
 
 	<br/><br/>
 	<input type="reset"/>
-	<input type="submit"/>
+	<input type="submit" id="submitBtn" />
 
 	<!-- <input type="hidden" id="_method" name="_method" value="put"> -->
 	<input type="button" id="deleteBtn" value="Delete"/>

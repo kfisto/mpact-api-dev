@@ -139,14 +139,18 @@ post '/guide/:key/editentry' do
 	puts filename
 	puts dfcontent
 
-	if !dfcontent.nil? 
-		puts "update entry with content: " + dfcontent
-		Entry.update(id, :data => dfcontent)
-	end
+	if filename.nil?
+		puts "leave entry alone"
+	else
+		if !dfcontent.nil? 
+			puts "update entry with content: " + dfcontent
+			Entry.update(id, :data => dfcontent)
+		end
 
-	if !filename.nil? && !filename.empty?
-		puts "update entry with file"
-		Entry.update(id, :data => filename[:tempfile].read)
+		if !filename.nil? && !filename.empty?
+			puts "update entry with file"
+			Entry.update(id, :data => filename[:tempfile].read)
+		end
 	end
 
 	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&edited=' + id.to_s

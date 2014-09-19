@@ -37,9 +37,11 @@ helpers do
 	# end
 
 	def guide_entries
-		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
+		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
+		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != "none"', params[:key]) || halt(404)
 	end
 end
+
 
 get '/guide/:key/entries' do
 	content_type 'application/json'
@@ -79,6 +81,19 @@ get '/guide/:key/entries/today' do
 
 	#production
 	guide_entries[idx-1].to_json
+
+end
+
+get '/guide/:key/entries/today/random' do
+	content_type 'application/json'
+	
+	l = guide_entries.length
+	r = Random.new.rand(1..l)
+
+	# puts "random number: " + r
+
+	#production
+	guide_entries[r-1].to_json
 
 end
 

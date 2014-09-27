@@ -77,8 +77,7 @@ helpers do
 
 	def guide_entries
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
-		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND ("entries"."image" != ?', params[:key], "none") || halt(404)
-			# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND ("entries"."image" != ? OR coallesce("entries"."image", "") = ''', params[:key], "none") || halt(404)
+		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ?', params[:key], "none") || halt(404)
 	end
 end
 

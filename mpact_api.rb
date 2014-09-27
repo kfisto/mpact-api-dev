@@ -2,6 +2,41 @@ require 'sinatra'
 require 'sinatra/activerecord'
 require 'json'
 require './environments'
+# require './initializers'
+
+
+class String
+  def to_bool
+    return true if self == true || self =~ (/^(true|t|yes|y|1)$/i)
+    return false if self == false || self.blank? || self =~ (/^(false|f|no|n|0)$/i)
+    raise ArgumentError.new("invalid value for Boolean: \"#{self}\"")
+  end
+end
+
+class Fixnum
+  def to_bool
+    return true if self == 1
+    return false if self == 0
+    raise ArgumentError.new("invalid value for Boolean: \"#{self}\"")
+  end
+end
+
+class TrueClass
+  def to_i; 1; end
+  def to_bool; self; end
+end
+
+class FalseClass
+  def to_i; 0; end
+  def to_bool; self; end
+end
+
+class NilClass
+  def to_bool; false; end
+end
+
+
+
 
 # use Rack::MethodOverride
 
@@ -39,7 +74,7 @@ helpers do
 	def guide_entries_all
 		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 	end
-	
+
 	def guide_entries
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ?', params[:key], "none") || halt(404)
@@ -51,12 +86,13 @@ get '/guide/:key/entries' do
 	content_type 'application/json'
 
 	key = params[:key]
-	puts key
+	debug = params[:debug].to_bool
+	puts debug ? "debug is true" : "debug is false"
 
 	if key == "refuge"
 		sorted = guide_entries.sort_by &:id
 	else
-		sorted = guide_entries
+		sorted = debug ? guide_entries_all : guide_entries
 	end
 
 	sorted.to_json

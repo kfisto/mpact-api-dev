@@ -72,12 +72,12 @@ helpers do
 	# end
 
 	def guide_entries_all
-		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
+		@guide_entries_all ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 	end
 
 	def guide_entries
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
-		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ?', params[:key], "none") || halt(404)
+		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND ("entries"."image" != ? OR coallesce("entries"."image", "") = ''', params[:key], "none") || halt(404)
 	end
 end
 
@@ -86,13 +86,24 @@ get '/guide/:key/entries' do
 	content_type 'application/json'
 
 	key = params[:key]
+
+	puts params[:debug]
+
 	debug = params[:debug].to_bool
 	puts debug ? "debug is true" : "debug is false"
 
 	if key == "refuge"
 		sorted = guide_entries.sort_by &:id
 	else
-		sorted = debug ? guide_entries_all : guide_entries
+
+		if debug == true
+			puts "return all"
+			sorted = guide_entries_all
+		else 
+			puts "return subset"
+			sorted = guide_entries
+		end
+
 	end
 
 	sorted.to_json

@@ -23,7 +23,7 @@ function hideMessage() {
 }
 
 var entries = [];
-<% guide_entries.each do |entry| %>
+<% guide_entries_all.each do |entry| %>
 	entries.push(<%= entry.to_json %>);
 <% end %>
 
@@ -171,7 +171,7 @@ textarea[disabled] {
 <form action="/guide/<%= params[:key] %>/editentry?apikey=1138" method="post" enctype="multipart/form-data">
 	<label for="entry">Entry</label>
 	<select id="entry" name="entry">
-		<% guide_entries.each do |entry| %>
+		<% guide_entries_all.each do |entry| %>
 		<option value="<%= entry[:id] %>"><%= entry[:name] %></option>
 		<% end %>
 	</select><br/>

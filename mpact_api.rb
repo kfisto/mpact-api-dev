@@ -36,6 +36,10 @@ helpers do
 	# 	@guides ||= Guide.limit(5)
 	# end
 
+	def guide_entries_all
+		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
+	end
+	
 	def guide_entries
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
 		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ?', params[:key], "none") || halt(404)

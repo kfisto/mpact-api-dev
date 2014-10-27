@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140913134554) do
+ActiveRecord::Schema.define(version: 20141019002900) do
 
   create_table "entries", force: true do |t|
     t.string  "guideKey"
@@ -26,6 +26,14 @@ ActiveRecord::Schema.define(version: 20140913134554) do
     t.string "image"
     t.string "title"
     t.string "textLabel"
+  end
+
+  create_table "notes", force: true do |t|
+    t.text     "text"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "entry_id"
+    t.string   "author"
   end
 
 end

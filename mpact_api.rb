@@ -46,9 +46,16 @@ class Guide < ActiveRecord::Base
 	has_many :entries
 end
 
-class Entry < ActiveRecord::Base
-	belongs_to :guide #, :order => "entrytype ASC, name DESC"
+class Note < ActiveRecord::Base
+	belongs_to :entry
 end
+
+class Entry < ActiveRecord::Base
+	belongs_to :guide
+	has_many :notes
+end
+
+
 
 
 before do
@@ -80,6 +87,12 @@ helpers do
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ?', params[:key], "none") || halt(404)
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ? AND coalesce("entries"."image", \'\') != \'\'', params[:key], "none") || halt(404)
 	end
+
+
+	def entry_notes
+		@entry_notes ||= Note.order('created_at ASC, updated_at ASC').where('"notes"."author" = ? AND "notes"."entry_id" = ?', params[:author], params[:entry]) || halt(404)
+	end
+
 end
 
 
@@ -148,6 +161,49 @@ get '/guide/:key/entries/today/random' do
 	guide_entries[r-1].to_json
 
 end
+
+
+
+# notes
+get '/entry/:entry/notes' do
+	content_type 'application/json'
+	#params entry, author
+
+	entry_notes.to_json
+end
+
+post '/entry/:entry/addnote' do
+
+	entry_idx = params[:entry]
+	note_text = params[:text]
+	author = params[:author]
+
+
+	if entry_idx.nil? || author.nil? || note_text.nil? || note_text.empty?
+		halt(400)
+	else
+		lastNote = Note.last
+		nextid = lastNote.nil? ? 1 : lastNote.id + 1
+
+		puts nextid
+
+		note = Note.create(id: nextid, text: note_text, author: author, entry_id: entry_idx)
+
+	end
+
+end
+
+post '/note/:id' do
+	id = params[:id]
+	note = Note.find(id)
+	return status 404 if note.nil?
+
+	note.delete
+	status 202
+end
+
+#end notes processing
+
 
 
 get '/guide/:key/addentry' do
@@ -231,7 +287,7 @@ post '/guide/:key/deleteentry/:id' do
 	entry.delete
 	status 202
 
-	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&eleted=' + id.to_s
+	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&deleted=' + id.to_s
 
 end
 

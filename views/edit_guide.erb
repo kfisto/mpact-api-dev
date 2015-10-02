@@ -99,9 +99,12 @@ $(document).ready(function() {
 		$('#image').val(selectedEntry.image);
 	});
 
-	$('#title').val(guides[0].title);
-	$('#textLabel').val(guides[0].textLabel);
-	$('#image').val(guides[0].image);
+	// if guides exist
+	if (guides.length > 0) {	
+		$('#title').val(guides[0].title);
+		$('#textLabel').val(guides[0].textLabel);
+		$('#image').val(guides[0].image);
+	}
 	
 	$('#submitBtn').click(function() {
 		$('#submitBtn').disable(true)
@@ -219,10 +222,8 @@ textarea[disabled] {
 
 	<br/><br/>
 	<input type="reset"/>
-	<!-- <input type="button" id="addBtn" value="Add" /> -->
 	<input type="submit" id="submitBtn" value="Save" />
 
-	<!-- <input type="hidden" id="_method" name="_method" value="put"> -->
 	<input type="button" id="deleteBtn" value="Delete"/>
 </form>
 

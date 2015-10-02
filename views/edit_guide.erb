@@ -107,6 +107,36 @@ $(document).ready(function() {
 		$('#submitBtn').disable(true)
 	});
 
+	$('#addBtn').click(function() {
+
+		$('#guide').hide();
+		$('#guide_new').show();
+		$('#cancelBtn').show();
+		$('#addBtn').hide();
+
+		$('#title').val('');
+		$('#textLabel').val('');
+		$('#image').val('');
+
+		$('#main').attr('action', '/addguide?apikey=1138')
+		
+	});
+
+	$('#cancelBtn').click(function() {
+
+		$('#guide').show();
+		$('#guide_new').hide();
+		$('#cancelBtn').hide();
+		$('#addBtn').show();
+
+		$('#title').val(guides[0].title);
+		$('#textLabel').val(guides[0].textLabel);
+		$('#image').val(guides[0].image);
+
+		$('#main').attr('action', '/editguide?apikey=1138')
+		
+	});
+
 	$('#deleteBtn').click(function() {
 
 		if (confirm('Delete ' + $('#title').val() + ' from the database?')) {
@@ -167,13 +197,16 @@ textarea[disabled] {
 
 </head>
 <body>
-<form action="/editguide?apikey=1138" method="post" enctype="multipart/form-data">
+<form id="main" action="/editguide?apikey=1138" method="post" enctype="multipart/form-data">
 	<label for="guide">Guide</label>
 	<select id="guide" name="guide">
 		<% guides_all.each do |guide| %>
 		<option value="<%= guide[:id] %>"><%= guide[:key] %></option>
 		<% end %>
-	</select><br/>
+	</select>
+	<input id="guide_new" name="guide_new" size="20" style="display: none;" />
+	<input type="button" id="addBtn" value="Add" />
+	<input type="button" id="cancelBtn" value="Cancel New" style="display: none;" /><br/>
 
 	<label for="title">Title</label>
 	<input id="title" name="title"/><br/>
@@ -186,8 +219,8 @@ textarea[disabled] {
 
 	<br/><br/>
 	<input type="reset"/>
-	<input type="button" id="addBtn" value="Add" />
-	<input type="submit" id="submitBtn" />
+	<!-- <input type="button" id="addBtn" value="Add" /> -->
+	<input type="submit" id="submitBtn" value="Save" />
 
 	<!-- <input type="hidden" id="_method" name="_method" value="put"> -->
 	<input type="button" id="deleteBtn" value="Delete"/>

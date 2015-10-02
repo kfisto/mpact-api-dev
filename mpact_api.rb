@@ -121,11 +121,6 @@ get '/guide/:key/entrieswithreqs' do
 
 	key = params[:key]
 
-	# puts params[:debug]
-
-	# debug = params[:debug].to_bool
-	# puts debug ? "debug is true" : "debug is false"
-
 	if key == "refuge"
 		sorted = entry_requests.sort_by &:id
 	else
@@ -321,14 +316,6 @@ post '/guide/:key/entry' do
 			entry.image = image
 		end
 
-		# puts content
-
-		# if !filename.nil? && !filename.empty?
-		# 	entry.data = filename[:tempfile].read
-		# elseif !content.nil?
-		# 	entry.data = content
-		# end
-
 		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&added=' + entry.id.to_s
 	else
 		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&error=Error adding new entry.'
@@ -359,30 +346,6 @@ post '/guide/:key/editentry' do
 		end
 	}
 
-	# theEntry.requests.each { |r| puts r.request }
-	
-	# puts reqs.join(',')
-
-	# filename = params[:datafile] if !params[:datafile].nil?
-	# dfcontent = params[:dfcontent]
-	
-	# puts filename
-	# puts dfcontent
-
-	# if filename.nil?
-	# 	puts "leave entry alone"
-	# else
-	# 	if !dfcontent.nil? 
-	# 		puts "update entry with content: " + dfcontent
-	# 		Entry.update(id, :data => dfcontent)
-	# 	end
-
-	# 	if !filename.nil? && !filename.empty?
-	# 		puts "update entry with file"
-	# 		Entry.update(id, :data => filename[:tempfile].read)
-	# 	end
-	# end
-
 	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&edited=' + id.to_s
 end
 
@@ -395,7 +358,6 @@ post '/deleteguide/:id' do
 	status 202
 
 	redirect '/guides/edit?apikey=1138&deleted=' + id.to_s
-
 end
 
 # edit guide
@@ -406,6 +368,17 @@ post '/editguide/:id' do
 	Guide.update(id, { :image => params[:image], :title => params[:title], :textLabel => params[:textLabel]})
 
 	redirect '/guide/edit?apikey=1138&edited=' + id.to_s
+end
+
+post '/addguide' do
+
+	newGuide = Guide.create(
+		key: params[:guide_new],
+		image: params[:image],
+		title: params[:title],
+		textLabel: params[:textLabel])
+	
+	redirect '/guides/edit?apikey=1138&added=' + newGuide.id.to_s
 end
 
 post '/guide/:key/deleteentry/:id' do

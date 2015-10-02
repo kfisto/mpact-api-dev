@@ -50,11 +50,18 @@ class Note < ActiveRecord::Base
 	belongs_to :entry
 end
 
+class Request < ActiveRecord::Base
+	belongs_to :entry
+end
+
 class Entry < ActiveRecord::Base
 	belongs_to :guide
+	has_many :requests
 	has_many :notes
 end
 
+class Op < ActiveRecord::Base
+end
 
 
 
@@ -72,11 +79,15 @@ get '/guides' do
 	Guide.limit(5).to_json
 end
 
+get '/guides/edit' do
+	erb :edit_guide
+end
+
 
 helpers do
-	# def guides
-	# 	@guides ||= Guide.limit(5)
-	# end
+	def guides_all
+		@guides_all ||= Guide.order('key ASC') || halt(404)
+	end
 
 	def guide_entries_all
 		@guide_entries_all ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
@@ -88,13 +99,41 @@ helpers do
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ? AND coalesce("entries"."image", \'\') != \'\'', params[:key], "none") || halt(404)
 	end
 
+	def entry_requests
+		@entry_requests ||= Entry.select('entries.id, entries.guideKey, entries.name, entries.image, entries.bio, entries.entrytype, group_concat(requests.request, "|") as reqs').joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
+	end
 
 	def entry_notes
 		@entry_notes ||= Note.order('created_at ASC, updated_at ASC').where('"notes"."author" = ? AND "notes"."entry_id" = ?', params[:author], params[:entry]) || halt(404)
 	end
 
+	def mission_ops
+		@mission_ops ||= Op.order('category ASC, what ASC') || halt(404)
+	end
+
+	def mission_ops_edit
+		@mission_ops_edit ||= Op.order('id ASC') || halt(404)
+	end
 end
 
+get '/guide/:key/entrieswithreqs' do
+	content_type 'application/json'
+
+	key = params[:key]
+
+	# puts params[:debug]
+
+	# debug = params[:debug].to_bool
+	# puts debug ? "debug is true" : "debug is false"
+
+	if key == "refuge"
+		sorted = entry_requests.sort_by &:id
+	else
+		sorted = entry_requests.sort_by &:name
+	end
+
+	sorted.to_json
+end
 
 get '/guide/:key/entries' do
 	content_type 'application/json'
@@ -134,6 +173,15 @@ get '/guide/:key/entries/report' do
 
 end
 
+# get a single entry by index
+get '/guide/:key/entry/:idx/requests' do
+	content_type 'application/json'
+
+	theEntry = Entry.find_by_id(params[:idx])
+	requests = theEntry.requests || []
+
+	requests.to_json
+end
 
 # get a single entry for "today" functionality (per guide)
 get '/guide/:key/entries/today' do
@@ -204,7 +252,49 @@ end
 
 #end notes processing
 
+#mission ops
+get '/ops/add' do
+	erb :add_op_form
+end
+get '/ops/edit' do
+	erb :edit_op_form
+end
+post '/ops/add' do
+	puts "add " + params[:description]
 
+	op = Op.create(
+			category: params[:category].to_i,
+			what: params[:what],
+			when: params[:when],
+			where: params[:where],
+			description: params[:description])
+
+	redirect '/ops/add?apikey=1138&added=' + op.id.to_s + '&cat=' + op.category.to_s
+end
+post '/ops/edit' do
+	puts "edit " + params[:description]
+
+	id = params[:id]
+	Op.update(
+		id, {
+			:category => params[:category].to_i,
+			:what => params[:what],
+			:when => params[:when],
+			:where => params[:where],
+			:description => params[:description]
+		})
+
+	redirect '/ops/edit?apikey=1138&edited=' + id.to_s
+end
+get '/ops/:cat' do
+	content_type 'application/json'
+	mission_ops.where('ops.category = ?', params[:cat].to_s).to_json
+end
+get '/ops' do
+	content_type 'application/json'
+	mission_ops.to_json
+end
+#end mission ops
 
 get '/guide/:key/addentry' do
 	erb :add_form
@@ -216,8 +306,8 @@ post '/guide/:key/entry' do
 
 	name = params[:name]
 	image = params[:image]
-	filename = params[:datafile] if !params[:datafile].nil?
-	content = params[:dfcontent]
+	# filename = params[:datafile] if !params[:datafile].nil?
+	# content = params[:dfcontent]
 
 	nextid = Entry.last.id + 1
 
@@ -254,29 +344,68 @@ post '/guide/:key/editentry' do
 
 	id = params[:entry]
 
-	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype]})
+	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype], :bio => params[:bio]})
 
-	filename = params[:datafile] if !params[:datafile].nil?
-	dfcontent = params[:dfcontent]
+	reqs = [params[:request1],params[:request2],params[:request3]]
+
+	theEntry = Entry.find_by_id(id)
+
+	theEntry.requests.delete_all
+
+	reqs.each_with_index { |item, idx| 
+		item.strip
+		if item.length > 0
+			theEntry.requests.create(request: item)
+		end
+	}
+
+	# theEntry.requests.each { |r| puts r.request }
 	
-	puts filename
-	puts dfcontent
+	# puts reqs.join(',')
 
-	if filename.nil?
-		puts "leave entry alone"
-	else
-		if !dfcontent.nil? 
-			puts "update entry with content: " + dfcontent
-			Entry.update(id, :data => dfcontent)
-		end
+	# filename = params[:datafile] if !params[:datafile].nil?
+	# dfcontent = params[:dfcontent]
+	
+	# puts filename
+	# puts dfcontent
 
-		if !filename.nil? && !filename.empty?
-			puts "update entry with file"
-			Entry.update(id, :data => filename[:tempfile].read)
-		end
-	end
+	# if filename.nil?
+	# 	puts "leave entry alone"
+	# else
+	# 	if !dfcontent.nil? 
+	# 		puts "update entry with content: " + dfcontent
+	# 		Entry.update(id, :data => dfcontent)
+	# 	end
+
+	# 	if !filename.nil? && !filename.empty?
+	# 		puts "update entry with file"
+	# 		Entry.update(id, :data => filename[:tempfile].read)
+	# 	end
+	# end
 
 	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&edited=' + id.to_s
+end
+
+post '/deleteguide/:id' do
+	id = params[:id]
+	guide = Guide.find(id)
+	return status 404 if guide.nil?
+
+	guide.delete
+	status 202
+
+	redirect '/guides/edit?apikey=1138&deleted=' + id.to_s
+
+end
+
+# edit guide
+post '/editguide/:id' do
+
+	id = params[:guide]
+
+	Guide.update(id, { :image => params[:image], :title => params[:title], :textLabel => params[:textLabel]})
+
+	redirect '/guide/edit?apikey=1138&edited=' + id.to_s
 end
 
 post '/guide/:key/deleteentry/:id' do

@@ -22,18 +22,9 @@ function hideMessage() {
 	$('#msgline').fadeTo(500, 0);
 }
 
-var entries = [],
-	requests = [];
-
-<% guide_entries_all.each do |entry| %>
-	entries.push(<%= entry.to_json %>);
-<% end %>
-
-<% @requests = Request.where('"requests"."entry_id" = ?', guide_entries_all.first.id)
-	@requests.each do |req| %>
-
-	requests.push(<%= req.to_json %>);
-
+var guides = [];
+<% guides_all.each do |guide| %>
+	guides.push(<%= guide.to_json %>);
 <% end %>
 
 function showMessage(message) {
@@ -60,11 +51,11 @@ $(document).ready(function() {
 	$('#msgline').hide();
 
 	if (deleted !== null) {
-		showMessage("Entry " + deleted + " deleted!");
+		showMessage("Guide " + deleted + " deleted!");
 	}
 
 	if (edited !== null) {
-		$('#msgline').html("Entry " + edited + " updated!");
+		$('#msgline').html("Guide " + edited + " updated!");
 
 		var initialTop = document.body.scrollHeight + 20 + 1,					// scroll height + top padding + 1 for good measure
 			newTop = document.body.scrollHeight - $('#msgline').outerHeight() - 15 - 1; 	// initial top - outer height - top padding - 15 - 1;
@@ -97,67 +88,30 @@ $(document).ready(function() {
 
 
 
-	$('#entry').change(function () {
+	$('#guide').change(function () {
 		var value = $('select option:selected').val(),
-			selectedEntry = $.grep(entries, function(item) {
+			selectedEntry = $.grep(guides, function(item) {
 				return item.id == value;
 			})[0];
 
-		$('#name').val(selectedEntry.name);
+		$('#title').val(selectedEntry.title);
+		$('#textLabel').val(selectedEntry.textLabel);
 		$('#image').val(selectedEntry.image);
-		$('#entrytype').val(selectedEntry.entrytype);
-		$('#contentreadonly').val(selectedEntry.data);
-		$('#bio').val(selectedEntry.bio);
-
-		var url = '/guide/<%= params[:key] %>/entry/' + $('#entry').val() + '/requests' + '?apikey=1138';
-
-		console.log(url);
-
-		$.ajax({
-			type: 'GET',
-			url: url,
-			success: function(result) {
-
-				$('#request1').val('')
-				$('#request2').val('')
-				$('#request3').val('')
-
-				requests = result;
-
-				$.each(requests, function(idx, value) {
-					$('#request' + (idx+1)).val(requests[idx].request);
-				});
-
-				// $('#request1').val(requests[0].request)
-				// $('#request2').val(requests[1].request)
-				// $('#request3').val(requests[2].request)
-
-			},
-			failure: function(result) {
-				debugger;
-			}
-		});
-
 	});
 
-	$('#name').val(entries[0].name);
-	$('#image').val(entries[0].image);
-	$('#entrytype').val(entries[0].entrytype);
-	$('#contentreadonly').val(entries[0].data);
-
-	debugger;
-	$.each(requests, function(idx, value) {
-		$('#request' + (idx+1)).val(requests[idx].request);
-	});
-
+	$('#title').val(guides[0].title);
+	$('#textLabel').val(guides[0].textLabel);
+	$('#image').val(guides[0].image);
+	
 	$('#submitBtn').click(function() {
 		$('#submitBtn').disable(true)
 	});
 
 	$('#deleteBtn').click(function() {
-		if (confirm('Delete ' + $('#name').val() + ' from the database?')) {
 
-			var url = '/guide/<%= params[:key] %>/deleteentry/' + $('#entry').val() + '?apikey=1138';
+		if (confirm('Delete ' + $('#title').val() + ' from the database?')) {
+
+			var url = '/deleteguide/' + $('#guide').val() + '?apikey=1138';
 
 			console.log(url);
 
@@ -165,7 +119,7 @@ $(document).ready(function() {
 				type: 'POST',
 				url: url,
 				success: function(result) {
-					window.location.href = '/guide/<%= params[:key] %>/editentries?apikey=1138&deleted=' + $('#entry').val()
+					window.location.href = '/guides/edit?apikey=1138&deleted=' + $('#guide').val()
 				},
 				failure: function(result) {
 					debugger;
@@ -186,13 +140,12 @@ html,body {
 	font-size: .9em;
 }
 form {
-	width: 600px;
+	width: 400px;
 }
 label {
 	display: inline-block;
 	width: 100px;
 	text-align: right;
-	vertical-align: top;
 }
 input[type="submit"],input[type="reset"] {
 	float: right;
@@ -210,52 +163,30 @@ textarea[disabled] {
 	padding: 10px 20px;
 }
 
-input,label {
-	margin: 0.25em 0;
-}
-
 </style>
 
 </head>
 <body>
-<form action="/guide/<%= params[:key] %>/editentry?apikey=1138" method="post" enctype="multipart/form-data">
-	<label for="entry">Entry</label>
-	<select id="entry" name="entry">
-		<% guide_entries_all.each do |entry| %>
-		<option value="<%= entry[:id] %>"><%= entry[:name] %></option>
+<form action="/editguide?apikey=1138" method="post" enctype="multipart/form-data">
+	<label for="guide">Guide</label>
+	<select id="guide" name="guide">
+		<% guides_all.each do |guide| %>
+		<option value="<%= guide[:id] %>"><%= guide[:key] %></option>
 		<% end %>
 	</select><br/>
 
-	<label for="name">Name</label>
-	<input id="name" name="name"/><br/>
+	<label for="title">Title</label>
+	<input id="title" name="title"/><br/>
 
-	<label for="image">Photo</label>
+	<label for="textLabel">textLabel</label>
+	<input id="textLabel" name="textLabel" size="20" /><br/>
+
+	<label for="image">Image</label>
 	<input id="image" name="image" size="20" /><br/>
-
-	<!-- <label for="datafile">Data File</label>
-	<input type="file" name="datafile"/><br/> -->
-
-	<label for="entrytype">Entry Type</label>
-	<select id="entrytype" name="entrytype">
-		<option value="0">Person</option>
-		<option value="1">Org</option>
-	</select><br/>
-
-	<!-- <textarea id="contentreadonly" disabled name="dfcontent" rows="6" cols="75"></textarea>
-	<textarea id="dfcontent" name="dfcontent" rows="6" cols="75"></textarea> -->
-
-	<label for="bio">Bio</label>
-	<textarea id="bio" name="bio" rows="6" cols="60"></textarea>
-
-	<label for="requests">Requests</label>
-	<div id="requests" style="display: inline-block;">
-	<input id="request1" name="request1" size="60" /><br/>
-	<input id="request2" name="request2" size="60" /><br/>
-	<input id="request3" name="request3" size="60" />
-	</div><br/>
 
 	<br/><br/>
 	<input type="reset"/>
+	<input type="button" id="addBtn" value="Add" />
 	<input type="submit" id="submitBtn" />
 
 	<!-- <input type="hidden" id="_method" name="_method" value="put"> -->

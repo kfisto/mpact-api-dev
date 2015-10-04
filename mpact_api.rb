@@ -90,7 +90,7 @@ helpers do
 	end
 
 	def guide_entries_all
-		@guide_entries_all ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
+		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC') || halt(404)
 	end
 
 	def guide_entries
@@ -310,7 +310,7 @@ post '/guide/:key/entry' do
 
 	if !name.nil?
 		# puts "do stuff"
-		entry = Entry.create(id: nextid, guideKey: params[:key], name: name)
+		entry = Entry.create(id: nextid, guideKey: params[:key], name: name, image: image, entrytype: params[:entrytype])
 
 		if !image.nil?
 			entry.image = image

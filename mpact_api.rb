@@ -304,13 +304,13 @@ post '/guide/:key/entry' do
 	# filename = params[:datafile] if !params[:datafile].nil?
 	# content = params[:dfcontent]
 
-	nextid = Entry.last.id + 1
+	# nextid = Entry.last.id + 1
 
-	puts nextid.to_s
+	# puts nextid.to_s
 
 	if !name.nil?
 		# puts "do stuff"
-		entry = Entry.create(id: nextid, guideKey: params[:key], name: name, image: image, entrytype: params[:entrytype])
+		entry = Entry.create(guideKey: params[:key], name: name, image: image, entrytype: params[:entrytype])
 
 		if !image.nil?
 			entry.image = image

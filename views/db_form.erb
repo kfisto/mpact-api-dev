@@ -107,7 +107,7 @@ $(document).ready(function() {
 		$('#name').val(selectedEntry.name);
 		$('#image').val(selectedEntry.image);
 		$('#entrytype').val(selectedEntry.entrytype);
-		$('#contentreadonly').val(selectedEntry.data);
+		// $('#contentreadonly').val(selectedEntry.data);
 		$('#bio').val(selectedEntry.bio);
 
 		var url = '/guide/<%= params[:key] %>/entry/' + $('#entry').val() + '/requests' + '?apikey=1138';
@@ -145,7 +145,7 @@ $(document).ready(function() {
 	$('#name').val(entries[0].name);
 	$('#image').val(entries[0].image);
 	$('#entrytype').val(entries[0].entrytype);
-	$('#contentreadonly').val(entries[0].data);
+	// $('#contentreadonly').val(entries[0].data);
 
 	// debugger;
 	$.each(requests, function(idx, value) {

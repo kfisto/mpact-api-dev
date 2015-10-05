@@ -36,7 +36,7 @@
 	<% guide_entries.each do |entry| 
 
 		needImage = entry.image.nil? || entry.image.empty?
-		needBio = entry.data.nil? || entry.data.empty?
+		needBio = entry.bio.nil? || entry.bio.empty?
 		%>
 		<tr>
 			<td><%= entry.name %></td>

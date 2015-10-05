@@ -100,7 +100,7 @@ helpers do
 	end
 
 	def entry_requests
-		@entry_requests ||= Entry.select('entries.id, entries.guideKey, entries.name, entries.image, entries.bio, entries.entrytype, group_concat(requests.request, "|") as reqs').joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
+		@entry_requests ||= Entry.select('entries.id, "entries"."guideKey", entries.name, entries.image, entries.bio, entries.entrytype, group_concat(requests.request, "|") as reqs').joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
 	end
 
 	def entry_notes

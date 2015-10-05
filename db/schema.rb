@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151004200658) do
+ActiveRecord::Schema.define(version: 20151005011943) do
 
   create_table "entries", force: true do |t|
     t.string  "guideKey"
@@ -46,8 +46,8 @@ ActiveRecord::Schema.define(version: 20151004200658) do
   end
 
   create_table "requests", force: true do |t|
-    t.string "entry_id"
-    t.string "request"
+    t.string  "request"
+    t.integer "entry_id"
   end
 
 end

@@ -25,7 +25,8 @@
 		$(document).ready(function() {
 
 			var added = getUrlParam('added'),
-				error = getUrlParam('error');
+				error = getUrlParam('error'),
+				entrytype = getUrlParam('et');
 
 			$('#msgline').hide();
 
@@ -61,6 +62,10 @@
 				setTimeout("hideMessage()", 7000);
 			}
 
+
+			if (entrytype !== null) {
+				$('#entrytype').val(entrytype);
+			}
 		});
 
 

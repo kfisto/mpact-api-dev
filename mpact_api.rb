@@ -322,7 +322,7 @@ post '/guide/:key/entry' do
 			entry.image = image
 		end
 
-		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&added=' + entry.id.to_s
+		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&added=' + entry.id.to_s + '&et=' + entry.entrytype.to_s
 	else
 		redirect '/guide/' + params[:key] + '/addentry?apikey=1138&error=Error adding new entry.'
 	end

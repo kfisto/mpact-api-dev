@@ -33,11 +33,25 @@
 	</thead>
 	<tbody>
 	
-	<% guide_entries.each do |entry| 
+	<%
+
+	lastGroup = -1
+
+	guide_entries.each do |entry| 
 
 		needImage = entry.image.nil? || entry.image.empty?
 		needBio = entry.bio.nil? || entry.bio.empty?
-		%>
+
+		if entry.entrytype == 0
+			group = "<tr><td colspan=\"4\"><h3>Individuals</h3></td></tr>"
+		elsif entry.entrytype == 1
+			group = "<tr><td colspan=\"4\"><h3>Church Planters</h3></td></tr>"
+		else 
+			group = "<tr><td colspan=\"4\"><h3>Organizations</h3></td></tr>"
+		end %>
+
+		<%= group if entry.entrytype != lastGroup %>
+		
 		<tr>
 			<td><%= entry.name %></td>
 			<td><%= needImage ? "Yes" : "" %></td>
@@ -50,7 +64,9 @@
 				%>
 			</td>
 		</tr>
-	<% end %>
+	<% 
+		lastGroup = entry.entrytype
+	end %>
 
 	</tbody>
 </table>

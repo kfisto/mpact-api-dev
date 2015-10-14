@@ -23,7 +23,8 @@ function hideMessage() {
 }
 
 var entries = [],
-	requests = [];
+	requests = [],
+	totalReqs = 3;
 
 <% guide_entries_all.each do |entry| %>
 	entries.push(<%= entry.to_json %>);
@@ -106,6 +107,7 @@ $(document).ready(function() {
 		$('#id').val(selectedEntry.id);
 		$('#name').val(selectedEntry.name);
 		$('#image').val(selectedEntry.image);
+		$('#location').val(selectedEntry.location);
 		$('#entrytype').val(selectedEntry.entrytype);
 		$('#bio').val(selectedEntry.bio);
 
@@ -139,15 +141,36 @@ $(document).ready(function() {
 	$('#id').val(entries[0].id);
 	$('#name').val(entries[0].name);
 	$('#image').val(entries[0].image);
+	$('#location').val(entries[0].location);
 	$('#bio').val(entries[0].bio);
 	$('#entrytype').val(entries[0].entrytype);
-	
+
+	for (var i = 1, len = requests.length || 3; i <= len; i++) {
+		$('#requests').append(function() {
+			req = "request" + i;
+			input = "<input id=\"" + req + "\" name=\"" + req + "\" size=\"60\" />";
+			return input;
+		});		
+	};
+
 	$.each(requests, function(idx, value) {
 		$('#request' + (idx+1)).val(requests[idx].request);
 	});
 
+	$('#requests').append("<input value=\"Add\" type=\"button\" id=\"addNewReq\" name=\"addNewReq\"/>");
+
+
 	$('#submitBtn').click(function() {
 		$('#submitBtn').disable(true)
+	});
+
+	$('#addNewReq').click(function() {
+		$('#addNewReq').before(function() {
+			totalReqs++;
+			newid = "request" + totalReqs;
+			console.log(newid);
+			return "<br/><input id=\"" + newid + "\" name=\"" + newid + "\" size=\"60\" />";
+		});
 	});
 
 	$('#deleteBtn').click(function() {
@@ -229,6 +252,9 @@ input,label {
 	<label for="image">Photo</label>
 	<input id="image" name="image" size="20" /><br/>
 
+	<label for="location">Location</label>
+	<input id="location" name="location" size="30" /><br/>
+
 	<!-- <label for="datafile">Data File</label>
 	<input type="file" name="datafile"/><br/> -->
 
@@ -243,13 +269,11 @@ input,label {
 	<textarea id="dfcontent" name="dfcontent" rows="6" cols="75"></textarea> -->
 
 	<label for="bio">Bio</label>
-	<textarea id="bio" name="bio" rows="6" cols="60"></textarea>
+	<textarea id="bio" name="bio" rows="6" cols="60"></textarea><br/>
 
 	<label for="requests">Requests</label>
 	<div id="requests" style="display: inline-block;">
-	<input id="request1" name="request1" size="60" /><br/>
-	<input id="request2" name="request2" size="60" /><br/>
-	<input id="request3" name="request3" size="60" />
+	
 	</div><br/>
 
 	<br/><br/>

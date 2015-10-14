@@ -90,7 +90,7 @@ helpers do
 	end
 
 	def guide_entries_all
-		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC') || halt(404)
+		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC').select('id,guideKey,name,image,bio,entrytype,location') || halt(404)
 	end
 
 	def guide_entries
@@ -100,12 +100,12 @@ helpers do
 	end
 
 	def entry_requests
-		@entry_requests ||= Entry.select('entries.id, "entries"."guideKey", entries.name, entries.image, entries.bio, entries.entrytype, array_to_string(array_agg(requests.request), \'|\') as reqs').joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
+		@entry_requests ||= Entry.select('entries.id, "entries"."guideKey", entries.name, entries.image, entries.bio, entries.entrytype, entries.location, array_to_string(array_agg(requests.request), \'|\') as reqs').joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
 	end
 
 	configure :development do
 		def entry_requests
-			@entry_requests ||= Entry.select("entries.id, 'entries'.'guideKey', entries.name, entries.image, entries.bio, entries.entrytype, group_concat(requests.request, \"|\") as reqs").joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
+			@entry_requests ||= Entry.select("entries.id, 'entries'.'guideKey', entries.name, entries.image, entries.bio, entries.location, entries.entrytype, group_concat(requests.request, \"|\") as reqs").joins(:requests).where('"entries"."guideKey" = ?', params[:key]).group('entries.id')
 		end
 	end
 
@@ -152,10 +152,10 @@ get '/guide/:key/entries' do
 
 		if debug == true
 			puts "return all"
-			sorted = guide_entries_all
+			sorted = guide_entries_all.select('id,guideKey,name,image,entrytype')
 		else 
 			puts "return subset"
-			sorted = guide_entries
+			sorted = guide_entries.select('id,guideKey,name,image,entrytype')
 		end
 
 	end
@@ -301,6 +301,19 @@ get '/guide/:key/addentry' do
 	erb :add_form
 end
 
+get '/guide/:key/entry/:idx' do
+	content_type 'application/json'
+
+	entry = Entry.find_by_id(params[:idx])
+	
+	return entry.to_json(:include => :requests)
+
+	# retval["requests"] = reqs.to_json
+
+
+	# return retval
+end
+
 post '/guide/:key/entry' do
 
 	entry = nil
@@ -337,19 +350,28 @@ post '/guide/:key/editentry' do
 
 	id = params[:entry]
 
-	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype], :bio => params[:bio]})
+	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype], :bio => params[:bio], :location => params[:location]})
 
-	reqs = [params[:request1],params[:request2],params[:request3]]
+	reqs_all = params.select { |key,value| key.to_s.match(/^request\d+/) }
+
+	puts reqs_all
 
 	theEntry = Entry.find_by_id(id)
 
 	theEntry.requests.delete_all
 
-	reqs.each_with_index { |item, idx| 
-		item.strip
-		if item.length > 0
-			theEntry.requests.create(request: item)
+	reqs_all.each_with_index { |item, idx| 
+
+		req = item[1]
+		req.strip
+		if req.length > 0
+			theEntry.requests.create(request: req)
 		end
+
+		# item[1].strip
+		# if item[1].length > 0
+		# 	theEntry.requests.create(request: item)
+		# end
 	}
 
 	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&edited=' + id.to_s

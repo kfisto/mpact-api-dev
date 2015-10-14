@@ -301,7 +301,7 @@ get '/guide/:key/addentry' do
 	erb :add_form
 end
 
-get '/guide/:key/entry/:idx' do
+get '/entry/:idx' do
 	content_type 'application/json'
 
 	entry = Entry.find_by_id(params[:idx])

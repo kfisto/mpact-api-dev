@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151005172337) do
+ActiveRecord::Schema.define(version: 20151014173843) do
 
   create_table "entries", force: true do |t|
     t.string  "guideKey"
@@ -19,7 +19,7 @@ ActiveRecord::Schema.define(version: 20151005172337) do
     t.string  "image"
     t.integer "entrytype"
     t.string  "location"
-    t.text    "bio",       limit: 255
+    t.text    "bio",       limit: 2048
   end
 
   create_table "guides", force: true do |t|
@@ -38,7 +38,7 @@ ActiveRecord::Schema.define(version: 20151005172337) do
   end
 
   create_table "ops", force: true do |t|
-    t.string  "description"
+    t.text    "description", limit: 2048
     t.integer "category"
     t.string  "what"
     t.string  "when"
@@ -46,7 +46,7 @@ ActiveRecord::Schema.define(version: 20151005172337) do
   end
 
   create_table "requests", force: true do |t|
-    t.text    "request",  limit: 255
+    t.text    "request",  limit: 2048
     t.integer "entry_id"
   end
 

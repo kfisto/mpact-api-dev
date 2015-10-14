@@ -90,7 +90,7 @@ helpers do
 	end
 
 	def guide_entries_all
-		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC').select('id,guideKey,name,image,bio,entrytype,location') || halt(404)
+		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC').select('id,"guideKey",name,image,bio,entrytype,location') || halt(404)
 	end
 
 	def guide_entries
@@ -152,10 +152,10 @@ get '/guide/:key/entries' do
 
 		if debug == true
 			puts "return all"
-			sorted = guide_entries_all.select('id,guideKey,name,image,entrytype')
+			sorted = guide_entries_all.select('id,"guideKey",name,image,entrytype')
 		else 
 			puts "return subset"
-			sorted = guide_entries.select('id,guideKey,name,image,entrytype')
+			sorted = guide_entries.select('id,"guideKey",name,image,entrytype')
 		end
 
 	end

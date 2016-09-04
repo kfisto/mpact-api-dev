@@ -56,12 +56,47 @@ $(document).ready(function() {
 
 	var edited = getUrlParam('edited'),
 		deleted = getUrlParam('deleted'),
-		error = getUrlParam('error');
+		deletedreq = getUrlParam('deletedreq'),
+		error = getUrlParam('error'),
+
+		addAddNewReqHandler = function() {
+			$('#addNewReq').click(function() {
+				$('#addNewReq').before(function() {
+					totalReqs++;
+					newid = "request" + totalReqs;
+					console.log(newid);
+					return "<br/><input id=\"" + newid + "\" name=\"" + newid + "\" size=\"60\" />";
+				});
+			});
+		},
+
+		deleteReqHandler = function() {
+			var btn = this,
+				reqId = btn.attributes.dataValue.value,
+				url = '/guide/<%= params[:key] %>/deleterequest/' + reqId + '?apikey=1138';
+
+			console.log(url);
+
+			$.ajax({
+				type: 'POST',
+				url: url,
+				success: function(result) {
+					window.location.href = '/guide/<%= params[:key] %>/editentries?apikey=1138&deletedreq=' + reqId;
+				},
+				failure: function(result) {
+					debugger;
+				}
+			});
+		};
 
 	$('#msgline').hide();
 
 	if (deleted !== null) {
 		showMessage("Entry " + deleted + " deleted!");
+	}
+
+	if (deletedreq !== null) {
+		showMessage("Request " + deletedreq + " deleted!");
 	}
 
 	if (edited !== null) {
@@ -110,6 +145,8 @@ $(document).ready(function() {
 		$('#location').val(selectedEntry.location);
 		$('#entrytype').val(selectedEntry.entrytype);
 		$('#bio').val(selectedEntry.bio);
+		$('#contentreadonly').val(selectedEntry.data);
+		$('#include').prop('checked', selectedEntry.include);
 
 		var url = '/guide/<%= params[:key] %>/entry/' + $('#entry').val() + '/requests' + '?apikey=1138';
 
@@ -120,15 +157,31 @@ $(document).ready(function() {
 			url: url,
 			success: function(result) {
 
-				$('#request1').val('')
-				$('#request2').val('')
-				$('#request3').val('')
-
 				requests = result;
+
+				$('#requests').empty();
+				for (var i = 1, len = requests.length || 3; i <= len; i++) {
+					$('#requests').append(function() {
+						req = "request" + i;
+						input = "<input id=\"" + req + "\" name=\"" + req + "\" size=\"60\" />";
+
+						if (requests[i-1]) {
+							input += "<input type=\"button\" id=\"delReq" + i + "\" name=\"delReq" + i + "\"datavalue=\"" + requests[i-1].id + "\" value=\"x\" style=\"width:18px\"/>";
+						}
+						return input;
+					});
+
+					if (requests[i-1]) {
+						$('#delReq' + i).click(deleteReqHandler);
+					}
+				};
 
 				$.each(requests, function(idx, value) {
 					$('#request' + (idx+1)).val(requests[idx].request);
 				});
+
+				$('#requests').append("<input value=\"Add\" type=\"button\" id=\"addNewReq\" name=\"addNewReq\"/>");
+				addAddNewReqHandler();
 
 			},
 			failure: function(result) {
@@ -143,14 +196,26 @@ $(document).ready(function() {
 	$('#image').val(entries[0].image);
 	$('#location').val(entries[0].location);
 	$('#bio').val(entries[0].bio);
+	$('#contentreadonly').val(entries[0].data);
 	$('#entrytype').val(entries[0].entrytype);
+	$('#include').prop('checked', entries[0].include);
 
 	for (var i = 1, len = requests.length || 3; i <= len; i++) {
 		$('#requests').append(function() {
 			req = "request" + i;
 			input = "<input id=\"" + req + "\" name=\"" + req + "\" size=\"60\" />";
+
+			if (requests[i-1]) {
+				input += "<input type=\"button\" id=\"delReq" + i + "\" name=\"delReq" + i + "\" datavalue=\"" + requests[i-1].id + "\" value=\"x\" style=\"width: 18px\"/>";
+
+			}
+
 			return input;
-		});		
+		});
+
+		if (requests[i-1]) {
+			$('#delReq' + i).click(deleteReqHandler);
+		}
 	};
 
 	$.each(requests, function(idx, value) {
@@ -158,19 +223,10 @@ $(document).ready(function() {
 	});
 
 	$('#requests').append("<input value=\"Add\" type=\"button\" id=\"addNewReq\" name=\"addNewReq\"/>");
-
+	addAddNewReqHandler();
 
 	$('#submitBtn').click(function() {
-		$('#submitBtn').disable(true)
-	});
-
-	$('#addNewReq').click(function() {
-		$('#addNewReq').before(function() {
-			totalReqs++;
-			newid = "request" + totalReqs;
-			console.log(newid);
-			return "<br/><input id=\"" + newid + "\" name=\"" + newid + "\" size=\"60\" />";
-		});
+		$('#submitBtn').prop('disable', true);
 	});
 
 	$('#deleteBtn').click(function() {
@@ -192,6 +248,28 @@ $(document).ready(function() {
 			});
 		} else {
 			$('#msgline').html('Delete canceled.');
+		}
+	});
+
+	$('#copyBtn').click(function() {
+		if (confirm('Copy requests from ' + $('#entry').val() + ' to entry: ' + $('#copyToEntry').val() + '?')) {
+
+			var url = '/copyrequests/' + $('#entry').val() + '/' + $('#copyToEntry').val() + '?apikey=1138';
+
+			console.log(url);
+
+			$.ajax({
+				type: 'POST',
+				url: url,
+				success: function(result) {
+					window.location.href = '/guide/<%= params[:key] %>/editentries?apikey=1138&edited=' + $('#copyToEntry').val()
+				},
+				failure: function(result) {
+					debugger;
+				}
+			});
+		} else {
+			$('#msgline').html('Copy requests canceled.');
 		}
 	});
 
@@ -233,6 +311,33 @@ input,label {
 	margin: 0.25em 0;
 }
 
+textarea {
+	width: 400px;
+}
+
+#requests {
+	width: 495px;
+}
+
+#requests input {
+	width: 400px;
+}
+#requests input[type="button"] {
+	width: 50px;
+}
+
+input[type="checkbox"] {
+	margin-left: 100px;
+}
+
+input[type="checkbox"] + label {
+	margin-left: 8px;
+}
+
+label.left {
+	text-align: left;
+}
+
 </style>
 
 </head>
@@ -261,20 +366,32 @@ input,label {
 	<label for="entrytype">Entry Type</label>
 	<select id="entrytype" name="entrytype">
 		<option value="0">Individual</option>
-		<option value="1">Church Planter</option>
-		<option value="2">Organization</option>
+		<option value="1">Organization</option>
+		<option value="2">Church Planter</option>
 	</select><br/>
-
-	<!-- <textarea id="contentreadonly" disabled name="dfcontent" rows="6" cols="75"></textarea>
-	<textarea id="dfcontent" name="dfcontent" rows="6" cols="75"></textarea> -->
 
 	<label for="bio">Bio</label>
 	<textarea id="bio" name="bio" rows="6" cols="60"></textarea><br/>
 
 	<label for="requests">Requests</label>
 	<div id="requests" style="display: inline-block;">
-	
 	</div><br/>
+
+	<br/>
+	<input type="checkbox" id="include" name="include">
+	<label for="include" class="left">Include</label><br/>
+
+	<br/>
+	<label for="copyToEntry">Copy requests to entry:</label>
+	<select id="copyToEntry" name="copyToEntry">
+		<% guide_entries_all.each do |entry| %>
+		<option value="<%= entry[:id] %>"><%= entry[:name] %></option>
+		<% end %>
+	</select>
+	<input type="button" id="copyBtn" value="Copy"/>
+
+
+	<br/>
 
 	<br/><br/>
 	<input type="reset"/>

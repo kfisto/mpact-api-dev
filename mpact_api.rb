@@ -90,11 +90,12 @@ helpers do
 	end
 
 	def guide_entries_all
-		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC').select('id,"guideKey",name,image,bio,entrytype,location') || halt(404)
+		# @guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC').select('id,"guideKey",name,image,bio,entrytype,location') || halt(404)
+		@guide_entries_all ||= Entry.where('"entries"."guideKey" = ?', params[:key]).order('entrytype ASC', 'name ASC').select('id,"guideKey",name,image,bio,data,entrytype,location,include') || halt(404)
 	end
 
 	def guide_entries
-		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ?', params[:key]) || halt(404)
+		@guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."include" = ? AND "entries"."guideKey" = ?', true, params[:key]) || halt(404)
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ?', params[:key], "none") || halt(404)
 		# @guide_entries ||= Entry.order('entrytype ASC, name ASC').where('"entries"."guideKey" = ? AND "entries"."image" != ? AND coalesce("entries"."image", \'\') != \'\'', params[:key], "none") || halt(404)
 	end
@@ -122,6 +123,10 @@ helpers do
 	end
 end
 
+get '/v2/guide/:key/entrieswithreqs' do
+	redirect '/guide/' + params[:key] + '/entrieswithreqs?apikey=' + params[:apikey]
+end
+
 get '/guide/:key/entrieswithreqs' do
 	content_type 'application/json'
 
@@ -135,6 +140,35 @@ get '/guide/:key/entrieswithreqs' do
 
 	sorted.to_json
 end
+
+# v2 GetEntriesForGuide
+get '/v2/guide/:key/entries' do
+	content_type 'application/json'
+
+	key = params[:key]
+
+	puts params[:debug]
+
+	debug = params[:debug].to_bool
+	puts debug ? "debug is true" : "debug is false"
+
+	if key == "refuge"
+		sorted = guide_entries.sort_by &:id
+	else
+
+		# if debug == true
+		# 	puts "return all"
+		# 	sorted = guide_entries_all.select('id,"guideKey",name,image,entrytype')
+		# else 
+		# 	puts "return subset"
+			sorted = guide_entries.select('id,"guideKey",name,image,entrytype,bio')
+		# end
+
+	end
+
+	sorted.to_json
+end
+
 
 get '/guide/:key/entries' do
 	content_type 'application/json'
@@ -152,10 +186,10 @@ get '/guide/:key/entries' do
 
 		if debug == true
 			puts "return all"
-			sorted = guide_entries_all.select('id,"guideKey",name,image,entrytype')
+			sorted = guide_entries_all.select('id,"guideKey",name,image,entrytype,data')
 		else 
 			puts "return subset"
-			sorted = guide_entries.select('id,"guideKey",name,image,entrytype')
+			sorted = guide_entries.select('id,"guideKey",name,image,entrytype,data')
 		end
 
 	end
@@ -260,6 +294,9 @@ end
 get '/ops/edit' do
 	erb :edit_op_form
 end
+get '/ops/report' do
+	erb :ops_report
+end
 post '/ops/add' do
 	puts "add " + params[:description]
 
@@ -323,13 +360,13 @@ post '/guide/:key/entry' do
 	# filename = params[:datafile] if !params[:datafile].nil?
 	# content = params[:dfcontent]
 
-	# nextid = Entry.last.id + 1
+	nextid = Entry.last.id + 1
 
-	# puts nextid.to_s
+	puts nextid.to_s
 
 	if !name.nil?
 		# puts "do stuff"
-		entry = Entry.create(guideKey: params[:key], name: name, image: image, entrytype: params[:entrytype])
+		entry = Entry.create(id: nextid, guideKey: params[:key], name: name, image: image, entrytype: params[:entrytype])
 
 		if !image.nil?
 			entry.image = image
@@ -350,7 +387,7 @@ post '/guide/:key/editentry' do
 
 	id = params[:entry]
 
-	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype], :bio => params[:bio], :location => params[:location]})
+	Entry.update(id, { :image => params[:image], :name => params[:name], :entrytype => params[:entrytype], :bio => params[:bio], :location => params[:location], :include => params[:include] })
 
 	reqs_all = params.select { |key,value| key.to_s.match(/^request\d+/) }
 
@@ -389,13 +426,13 @@ post '/deleteguide/:id' do
 end
 
 # edit guide
-post '/editguide/:id' do
+post '/editguide' do
 
 	id = params[:guide]
 
 	Guide.update(id, { :image => params[:image], :title => params[:title], :textLabel => params[:textLabel]})
 
-	redirect '/guide/edit?apikey=1138&edited=' + id.to_s
+	redirect '/guides/edit?apikey=1138&edited=' + id.to_s
 end
 
 post '/addguide' do
@@ -434,7 +471,35 @@ delete 'guide/entry/:id' do
 end
 
 
+post '/copyrequests/:from/:to' do
+	fromEntryReqs = Request.where('"requests"."entry_id" = ?', params[:from])
 
+	toEntry = Entry.find_by_id(params[:to])
+
+	fromEntryReqs.each do |req|
+
+		lastReq = Request.last
+		nextid = lastReq.nil? ? 1 : lastReq.id + 1
+
+		# req = Request.create(id: nextid, )
+		toEntry.requests.create(request: req.request)
+
+	end
+	
+	redirect '/guide/' + toEntry.guideKey + '/editentries?apikey=1138&edited=' + params[:to].to_s
+end
+
+post '/guide/:key/deleterequest/:id' do
+	id = params[:id]
+	request = Request.find(id)
+	return status 404 if request.nil?
+
+	request.delete
+	status 202
+
+	redirect '/guide/' + params[:key] + '/editentries?apikey=1138&deletedreq=' + id.to_s
+
+end
 
 #################
 # Static (image) handler

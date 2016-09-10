@@ -17,7 +17,6 @@ ActiveRecord::Schema.define(version: 20151112003344) do
     t.string  "guideKey"
     t.string  "name"
     t.string  "image"
-    t.binary  "data",      limit: 8192
     t.integer "entrytype"
     t.string  "location"
     t.text    "bio",       limit: 2048
